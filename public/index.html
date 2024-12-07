@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SearchEngine with 3D Background</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Content Overlay -->
+  <div class="content">
+    <h1>Welcome to SearchEngine</h1>
+    <form id="questionForm">
+      <label for="question">Enter your question:</label><br>
+      <input type="text" id="question" name="question" required><br>
+      <button type="submit">Ask</button>
+    </form>
+    <div id="response"></div>
+  </div>
+
+  <!-- Three.js Canvas -->
+  <canvas id="myCanvas"></canvas>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+    import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+
+  if (typeof window !== 'undefined') {
+			let camera, scene, renderer;
+
+			init();
+			render();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 100 );
+				camera.position.set( 1.5, 4, 9 );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xf6eedc );
+
+				//
+
+				const dracoLoader = new DRACOLoader();
+				dracoLoader.setDecoderPath( 'jsm/libs/draco/gltf/' );
+
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader( dracoLoader );
+				loader.setPath( 'models/gltf/AVIFTest/' );
+				loader.load( 'forest_house.glb', function ( gltf ) {
+
+					scene.add( gltf.scene );
+
+					render();
+
+				} );
+
+				//
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				const controls = new OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', render );
+				controls.target.set( 0, 2, 0 );
+				controls.update();
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				render();
+
+			}
+
+			//
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+}
+  </script>
+  <!-- Handle form submission and response -->
+  <script>
+    const form = document.getElementById('questionForm');
+    const responseDiv = document.getElementById('response');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const question = document.getElementById('question').value;
+      responseDiv.innerHTML = 'Loading...';
+
+      try {
+        const res = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          responseDiv.innerHTML = `<h3>Answer:</h3><p>${data.response}</p>`;
+        } else {
+          responseDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+        }
+      } catch (error) {
+        responseDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+      }
+    });
+  </script>
+
+  <!-- Include Three.js background -->
+  <script type="module">
+    import * as THREE from 'three';
+
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+if (typeof window !== 'undefined') {
+			let camera, scene, renderer;
+
+			init();
+			render();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 100 );
+				camera.position.set( 1.5, 4, 9 );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xf6eedc );
+
+				//
+
+				const dracoLoader = new DRACOLoader();
+				dracoLoader.setDecoderPath( 'jsm/libs/draco/gltf/' );
+
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader( dracoLoader );
+				loader.setPath( 'models/gltf/AVIFTest/' );
+				loader.load( 'forest_house.glb', function ( gltf ) {
+
+					scene.add( gltf.scene );
+
+					render();
+
+				} );
+
+				//
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				const controls = new OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', render );
+				controls.target.set( 0, 2, 0 );
+				controls.update();
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				render();
+
+			}
+
+			//
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
+}
+    init();
+  </script>
+</body>
+</html>
